@@ -28,7 +28,8 @@ const Home = () => {
   // Get a reference to the Firebase Storage service
   const storage = firebase.storage();
 
-  const link = "https://drab-tan-gharial-ring.cyclic.app"
+  // const link = "https://drab-tan-gharial-ring.cyclic.app"
+  const link="http://localhost:4000"
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${link}/users`);
@@ -46,6 +47,9 @@ const Home = () => {
 
   const deleteUser = async (user) => {
     try {
+      const deleteButton = document.getElementById(user._id);
+        deleteButton.innerText = 'Deleting...';
+        deleteButton.disabled = true;
       // Delete the user from the backend
       const response = await fetch(`${link}/delete`, {
         method: 'DELETE',
@@ -54,21 +58,32 @@ const Home = () => {
         },
         body: JSON.stringify(user),
       });
-
+  
       if (response.ok) {
         // Delete the image file from Firebase Storage
         await storage.refFromURL(user.imageURL).delete();
         // Delete the audio file from Firebase Storage
         await storage.refFromURL(user.audioURL).delete();
-        console.log('User deleted successfully from both places !');
+  
+        console.log('User deleted successfully from both places!');
         fetchUsers();
+        deleteButton.innerText = 'Deleted';
+        // Perform additional actions or show a success message
       } else {
         console.log('Error deleting user:', response.status);
+        // Show an error message or perform error handling
       }
     } catch (error) {
       console.log(`Error deleting user: ${error.message}`);
+      // Show an error message or perform error handling
+  
+      if (deleteButton) {
+        deleteButton.innerText = 'Delete';
+        deleteButton.disabled = false;
+      }
     }
   };
+  
 
 
 
@@ -135,6 +150,7 @@ const Home = () => {
                 </div>
                 <button
                   style={{ borderRadius: "10px" }}
+                  id={user._id}
                   onClick={() => deleteUser(user)}
                   className="text-l bg-red-400 text-white pt-1 pb-1 pl-4 pr-4 my-2"
                 >

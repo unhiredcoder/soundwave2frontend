@@ -30,55 +30,70 @@ const Register = () => {
   const [audioFile, setAudioFile] = useState(null);
 
   const canSubmit = username && imageFile && audioFile;
-  const handleUsernameChange = (event) => {
-    setUsername(event.target.value);
-  };
+const handleUsernameChange = (event) => {
+  setUsername(event.target.value);
+};
 
-  const handleImageChange = (event) => {
-    setImageFile(event.target.files[0]);
-  };
+const handleImageChange = (event) => {
+  setImageFile(event.target.files[0]);
+};
 
-  const handleAudioChange = (event) => {
-    setAudioFile(event.target.files[0]);
-  };
+const handleAudioChange = (event) => {
+  setAudioFile(event.target.files[0]);
+};
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (canSubmit) {
-      savedata.disabled=true;
-      savedata.innerText = "Uploading..."
-      // Upload the image and audio files to Firebase Storage
-      const imageRef = storageRef.child(imageFile.name);
-      const audioRef = storageRef.child(audioFile.name);
+const generateUniqueFileName = (file) => {
+  const uniqueName = Date.now() + '-' + file.name;
+  return uniqueName;
+};
 
-      const imageUploadTask = imageRef.put(imageFile);
-      const audioUploadTask = audioRef.put(audioFile);
+const handleSubmit = (event) => {
+  event.preventDefault();
+  if (canSubmit) {
+    savedata.disabled = true;
+    savedata.innerText = "Uploading..."
 
-      Promise.all([imageUploadTask, audioUploadTask])
-        .then(() => {
-          // Get the download URLs for the uploaded files
-          imageRef.getDownloadURL().then((imageDownloadURL) => {
-            audioRef.getDownloadURL().then((audioDownloadURL) => {
-              // Send the data to your server
-              const data = {
-                username: username,
-                imageDownloadURL: imageDownloadURL,
-                audioDownloadURL: audioDownloadURL,
-              };
-              savedata.innerText = "Upload"
+    // Generate unique filenames for image and audio files
+    const uniqueImageName = generateUniqueFileName(imageFile);  //adding  
+    const uniqueAudioName = generateUniqueFileName(audioFile);
 
-              if (data) {
-                sendtoserver(data)
-              }
-            });
+    // Upload the image and audio files to Firebase Storage
+    const imageRef = storageRef.child(uniqueImageName);
+    const audioRef = storageRef.child(uniqueAudioName);
+
+    const imageUploadTask = imageRef.put(imageFile);
+    const audioUploadTask = audioRef.put(audioFile);
+
+    Promise.all([imageUploadTask, audioUploadTask])
+      .then(() => {
+        // Get the download URLs for the uploaded files
+        imageRef.getDownloadURL().then((imageDownloadURL) => {
+          audioRef.getDownloadURL().then((audioDownloadURL) => {
+            // Send the data to your server
+            const data = {
+              username: username,
+              imageDownloadURL: imageDownloadURL,
+              audioDownloadURL: audioDownloadURL,
+            };
+            savedata.innerText = "Upload"
+
+            if (data) {
+              sendtoserver(data)
+            }
           });
-        })
-        .catch((error) => {
-          console.log(error);
         });
-    }else alert("Please fill all the fields!")
-  };
-  const link = "https://drab-tan-gharial-ring.cyclic.app"
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  } else {
+    alert("Please fill all the fields!")
+  }
+};
+
+  // const link = "https://drab-tan-gharial-ring.cyclic.app"
+  const link="http://localhost:4000"
+
 
   function sendtoserver(data) {
     fetch(`${link}/save`, {
