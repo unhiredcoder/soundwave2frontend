@@ -28,8 +28,8 @@ const Home = () => {
   // Get a reference to the Firebase Storage service
   const storage = firebase.storage();
 
-  // const link = "https://drab-tan-gharial-ring.cyclic.app"
-  const link="http://localhost:4000"
+  const link = "https://drab-tan-gharial-ring.cyclic.app"
+  // const link="http://localhost:4000"
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${link}/users`);
